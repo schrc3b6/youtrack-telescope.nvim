@@ -96,8 +96,6 @@ end
 local M = {}
 M.issues = function(opts, ext_config)
 	-- print("called M.issues")
-	print(vim.inspect(ext_config))
-	print(vim.inspect(opts))
 	opts = opts or {}
 	pickers
 		.new(opts, {
@@ -128,5 +126,4 @@ M.issues = function(opts, ext_config)
 		})
 		:find()
 end
-print("loaded")
 return M
