@@ -58,7 +58,7 @@ local function fetch_issues(ext_config)
 					entry.assignee = customField.value.name
 				elseif customField.name == "Priority" then
 					entry.priority = customField.value.name
-				elseif customField.name == "State" then
+				elseif customField.name == "State" or customField.name == "Stage" then
 					entry.state = customField.value.name
 				elseif customField.name == "Sprints" then
 					local sprints = {}
@@ -109,6 +109,9 @@ local function my_previewer(opts)
 			local description = entry.value.description
 			if description == vim.NIL then
 				description = "No Description"
+			end
+			if entry.value.sprints == nil then
+				entry.value.sprints = {}
 			end
 			-- print(vim.inspect(split_string(description)))
 			local lines = {
