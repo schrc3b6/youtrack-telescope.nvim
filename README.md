@@ -20,6 +20,9 @@ extensions = {
 }
 ```
 
+Run vim.cmd:
+`Telescope youtrack youtrack`
+
 ## Status
 
 This is my first time writing lua and my first vim plugin, so it's probably littered with bugs :)
