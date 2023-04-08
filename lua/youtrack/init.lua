@@ -16,6 +16,9 @@ local function fetch_issues(ext_config)
 	}
 	local url = ext_config.url .. "/api/issues"
 
+	local page_size = 20
+	local first_element = 0
+
 	local query = "for: me #Unresolved "
 	if ext_config.query ~= nil then
 		query = ext_config.query
@@ -24,31 +27,54 @@ local function fetch_issues(ext_config)
 	-- Set up the query parameters
 	local params = {
 		query = query,
-		fields = "id,idReadable,summary,description,project(name)",
-		top = "10",
-		skip = "0",
+		fields = "id,idReadable,summary,description,project(name),customFields(name,value(name))",
+		["$top"] = tostring(page_size),
+		["$skip"] = tostring(first_element),
 	}
 
-	-- Make the HTTP request using plenary.curl
-	local res = curl.get(url, {
-		headers = headers,
-		query = params,
-	})
-	local body = res.body
-	-- Parse the response body as JSON
-	local issues = vim.fn.json_decode(body)
-
-	-- Return the list of entries
 	local entries = {}
-	for _, issue in ipairs(issues) do
-		local entry = {
-			summary = issue.summary,
-			description = issue.description,
-			idReadable = issue.idReadable,
-			project = issue.project,
-		}
-		table.insert(entries, entry)
-	end
+	repeat
+		-- Make the HTTP request using plenary.curl
+		local res = curl.get(url, {
+			headers = headers,
+			query = params,
+		})
+		local body = res.body
+		-- Parse the response body as JSON
+		issues = vim.fn.json_decode(body)
+
+		-- Return the list of entries
+		for _, issue in ipairs(issues) do
+			local entry = {
+				summary = issue.summary,
+				description = issue.description,
+				idReadable = issue.idReadable,
+				project = issue.project,
+			}
+			for _, customField in ipairs(issue.customFields) do
+				if customField.name == "Type" then
+					entry.type = customField.value.name
+				elseif customField.name == "Assignee" then
+					entry.assignee = customField.value.name
+				elseif customField.name == "Priority" then
+					entry.priority = customField.value.name
+				elseif customField.name == "State" then
+					entry.state = customField.value.name
+				elseif customField.name == "Sprints" then
+					local sprints = {}
+					for _, sprint in ipairs(customField.value) do
+						table.insert(sprints, sprint.name)
+					end
+					entry.sprints = sprints
+				end
+			end
+			table.insert(entries, entry)
+		end
+
+		first_element = first_element + page_size
+		params["$skip"] = tostring(first_element)
+
+	until #issues <= 0
 	return entries
 end
 
@@ -87,6 +113,11 @@ local function my_previewer(opts)
 			-- print(vim.inspect(split_string(description)))
 			local lines = {
 				string.format("Project: %s", entry.value.project.name),
+				string.format("Sprint: %s", table.concat(entry.value.sprints, ", ")),
+				string.format("Type: %s", entry.value.type),
+				string.format("State: %s", entry.value.state),
+				string.format("Priority: %s", entry.value.priority),
+				string.format("Assignee: %s", entry.value.assignee),
 				"",
 				string.format("Summary: %s", entry.value.summary),
 				"----------------",
