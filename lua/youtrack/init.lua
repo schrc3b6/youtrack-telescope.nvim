@@ -127,6 +127,7 @@ local function my_previewer(opts)
 				unpack(split_string(description)),
 			}
 			vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+			require("telescope.previewers.utils").regex_highlighter(self.state.bufnr, "youtracktelescope")
 		end,
 	})
 end
