@@ -16,9 +16,14 @@ local function fetch_issues(ext_config)
 	}
 	local url = ext_config.url .. "/api/issues"
 
+	local query = "for: me #Unresolved "
+	if ext_config.query ~= nil then
+		query = ext_config.query
+	end
+
 	-- Set up the query parameters
 	local params = {
-		query = "for: me #Unresolved ",
+		query = query,
 		fields = "id,idReadable,summary,description,project(name)",
 		top = "10",
 		skip = "0",
