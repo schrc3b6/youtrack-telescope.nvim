@@ -117,6 +117,7 @@ local function my_previewer(opts)
 			local lines = {
 				string.format("Project: %s", entry.value.project.name),
 				string.format("Sprint: %s", table.concat(entry.value.sprints, ", ")),
+        string.format("Id: %s", entry.value.idReadable),
 				string.format("Type: %s", entry.value.type),
 				string.format("State: %s", entry.value.state),
 				string.format("Priority: %s", entry.value.priority),
@@ -158,6 +159,9 @@ M.issues = function(opts, ext_config)
 					if selection ~= nil then
 						actions.close(prompt_bufnr)
 						vim.api.nvim_put({ selection.value.idReadable }, "", false, true)
+						if opts.insert_mode == true then
+							vim.cmd([[normal! a ]]) -- add empty space so the cursor respects the indent
+						end
 					end
 				end)
 				-- Return true to indicate that we've modified the key mappings
